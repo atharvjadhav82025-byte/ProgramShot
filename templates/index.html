@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ProgramShot</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 900px;
+            margin: 30px auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            margin-bottom: 5px;
+            font-size: 36px;
+        }
+
+        .header p {
+            margin-top: 0;
+            color: #666;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            margin-bottom: 20px;
+            border-radius: 14px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 110px;
+            padding: 14px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            font-size: 17px;
+            resize: vertical;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: #555;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px dashed #aaa;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+
+        .preview {
+            display: none;
+            max-width: 100%;
+            max-height: 400px;
+            margin-top: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: #222;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .generate-btn:hover {
+            opacity: 0.85;
+        }
+
+        .saved-title {
+            margin-top: 0;
+        }
+
+        .saved-image {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+
+        .saved-image img {
+            width: 65px;
+            height: 65px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .filename {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .download-btn {
+            padding: 9px 13px;
+            border-radius: 7px;
+            background: #222;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+
+            .container {
+                width: 94%;
+                margin: 18px auto;
+            }
+
+            .header h1 {
+                font-size: 30px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .saved-image {
+                gap: 8px;
+            }
+
+            .saved-image img {
+                width: 55px;
+                height: 55px;
+            }
+
+            .download-btn {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="header">
+            <h1>ProgramShot</h1>
+            <p>Program + Output Image Maker</p>
+        </div>
+
+        <div class="card">
+
+            <label for="question">
+                Question
+            </label>
+
+            <textarea
+                id="question"
+                placeholder="Write your program question here..."
+            ></textarea>
+
+            <br><br>
+
+            <label for="program">
+                Program Image
+            </label>
+
+            <input
+                type="file"
+                id="program"
+                accept="image/*"
+                onchange="showImage(this, 'programPreview')"
+            >
+
+            <img
+                id="programPreview"
+                class="preview"
+            >
+
+            <br><br>
+
+            <label for="output">
+                Output Image
+            </label>
+
+            <input
+                type="file"
+                id="output"
+                accept="image/*"
+                onchange="showImage(this, 'outputPreview')"
+            >
+
+            <img
+                id="outputPreview"
+                class="preview"
+            >
+
+            <br><br>
+
+            <button
+                class="generate-btn"
+                onclick="generateImage()"
+            >
+                Generate & Save
+            </button>
+           <div id="resultPreview" style="display:none; margin-top:20px; text-align:center;">
+    <h3>Generated Preview</h3>
+
+    <img
+        id="generatedPreview"
+        style="max-width:100%; border:1px solid #ddd; border-radius:10px;"
+    >
+
+    <br><br>
+
+    <a
+        id="generatedDownload"
+        class="download-btn"
+        download
+    >
+        Download Image
+    </a>
+    <br><br>
+
+<a
+    id="pdfDownload"
+    class="download-btn"
+>
+    Download PDF
+</a>
+</div>
+            <button
+    class="generate-btn"
+    onclick="resetForm()"
+    style="margin-top:10px;"
+>
+    New Question
+</button>
+
+        </div>
+
+        <div class="card">
+
+            <h2 class="saved-title">
+                Saved Images
+            </h2>
+
+            {% if images %}
+
+                {% for image in images %}
+
+                    <div class="saved-image">
+
+                        <img
+                            src="/generated/{{ image['filename'] }}"
+                            loading="lazy"
+                        >
+
+                        <div class="filename">
+    <strong>{{ image["filename"] }}</strong>
+    <br>
+    <small>{{ image["question"] }}</small>
+</div>
+
+                        <a
+                            class="download-btn"
+                            href="/generated/{{ image['filename'] }}"
+                            download
+                        >
+                            Download
+                        </a>
+                       <button
+    class="download-btn"
+    onclick="deleteImage('{{ image['filename'] }}')"
+>
+    Delete
+</button>
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <p>No saved images yet.</p>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <script src="/static/script.js"></script>
+
+</body>
+
+</html>
