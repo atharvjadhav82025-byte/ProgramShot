@@ -209,7 +209,37 @@ def download_pdf(filename):
         return {
             "error": str(e)
         }, 500
+@app.route("/delete/<filename>", methods=["POST"])
+def delete_image(filename):
 
+    try:
+        # Delete image from Supabase Storage
+        storage_response = requests.delete(
+            f"{SUPABASE_URL}/storage/v1/object/"
+            f"{BUCKET}/{filename}",
+            headers={
+                "apikey": SUPABASE_KEY,
+                "Authorization": f"Bearer {SUPABASE_KEY}"
+            }
+        )
+
+        if not storage_response.ok:
+            return {"error": "Storage delete failed"}, 500
+
+        # Delete database record
+        db_response = requests.delete(
+            f"{SUPABASE_URL}/rest/v1/images"
+            f"?filename=eq.{filename}",
+            headers=supabase_headers()
+        )
+
+        if not db_response.ok:
+            return {"error": "Database delete failed"}, 500
+
+        return {"message": "Image deleted"}
+
+    except Exception as e:
+        return {"error": str(e)}, 500
 
 if __name__ == "__main__":
     app.run(
